@@ -1,9 +1,10 @@
 const express = require('express');
-let books = require("./booksdb.js");
+let books = require("./booksdb.js").books;
 let isValid = require("./auth_users.js").isValid;
 let users = require("./auth_users.js").users;
 // Public router
 const public_users = express.Router();
+console.log(books)
 
 // Public route: Register
 public_users.post("/register", (req, res) => {

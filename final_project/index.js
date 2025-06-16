@@ -23,4 +23,8 @@ app.use("/", genl_routes);
 // Authenticated customer routes
 app.use("/customer", customer_routes);
 
-app.listen(PORT, () => console.log("Server is running"));
+// Only start server if not imported by test
+if (require.main === module) {
+    app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));
+}
+module.exports = { app, PORT };

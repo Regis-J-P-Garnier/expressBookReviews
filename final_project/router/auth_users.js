@@ -2,8 +2,8 @@ const express = require('express');
 const jwt = require('jsonwebtoken');
 
 // Import middleware
-const verifyToken = require('../middleware/authJwt');
-let books = require('./booksdb.js'); // for the put function
+// const verifyToken = require('../middleware/authJwt');
+let books = require('./booksdb.js').books; // for the put function
 
 // auth users only and "login" router
 const regd_users = express.Router();

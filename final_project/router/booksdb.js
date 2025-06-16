@@ -11,4 +11,10 @@ let books = {
       10: {"author": "Samuel Beckett","title": "Molloy, Malone Dies, The Unnamable, the trilogy", "reviews": {} }
 }
 
-module.exports=books;
+// Allow tests to reset reviews
+function resetBooksReviews() {
+    for (const isbn in books) {
+        books[isbn].reviews = {};
+    }
+}
+module.exports = { books, resetBooksReviews };
