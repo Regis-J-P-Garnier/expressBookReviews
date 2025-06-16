@@ -3,11 +3,23 @@ let books = require("./booksdb.js");
 let isValid = require("./auth_users.js").isValid;
 let users = require("./auth_users.js").users;
 const public_users = express.Router();
+//let regd_users = require("./auth_users.js").regd_users;
 
+// Public route: Register
+public_users.post("/register", (req, res) => {
+    const { username, password } = req.body.user || {};
 
-public_users.post("/register", (req,res) => {
-  //Write your code here
-  return res.status(300).json({message: "Yet to be implemented"});
+    if (!username || !password) {
+        return res.status(400).json({ message: "Missing username or password" });
+    }
+
+    if (isValid(username)) {
+        return res.status(409).json({ message: "Username already taken" });
+    }
+
+    users.push({ username, password });
+
+    return res.status(201).json({ message: "User registered successfully" });
 });
 
 // Get the book list available in the shop
