@@ -1,7 +1,9 @@
 const express = require('express');
 const jwt = require('jsonwebtoken');
+
 // Import middleware
 const verifyToken = require('../middleware/authJwt');
+let books = require('./booksdb.js'); // for the put function
 
 // auth users only and "login" router
 const regd_users = express.Router();
@@ -38,35 +40,95 @@ regd_users.post("/login", (req, res) => {
     return res.status(200).send("User successfully logged in");
 });
 
-// Middleware for protected routes
-const authMiddleware = (req, res, next) => {
-    // try to retrieve Token
+// Add or modify a book review (protected route)
+regd_users.put("/auth/review/:isbn", (req, res) => {
+    // 1. Check if user is authenticated via session
     const token = req.session?.authorization?.accessToken;
-    // guard clauses
-    const notHasToken = (!token)
-    if (notHasToken) {
+
+    if (!token) {
         return res.status(403).json({ message: "User not logged in" });
     }
-    // decode an valid Token
+
     try {
         const decoded = jwt.verify(token, "access");
         req.user = decoded.data;
-        next();
     } catch (err) {
         return res.status(403).json({ message: "User not authenticated" });
     }
-};
-// BEGIN for testing purpose only -------------------------------------------
-// Protected route example: Add review
-regd_users.put("/review/:isbn", authMiddleware, (req, res) => {
+
+    // 2. Validate ISBN and review input
     const isbn = req.params.isbn;
+    const review = req.body.review;
+
+    const hasNoBooks = (!books || Object.keys(books).length === 0);
+    if (hasNoBooks) {
+        return res.status(404).json({ message: "No books found" });
+    }
+
+    const requestedBook = books[isbn];
+    const notHasRequestedBook = (!requestedBook);
+    if (notHasRequestedBook) {
+        return res.status(404).json({ message: "Book not found" });
+    }
+    const NOTHasReview = (!review);
+    if (NOTHasReview) {
+        return res.status(400).json({ message: "Review content is required" });
+    }
+
     const username = req.user;
 
-    return res.status(200).json({
-        message: `Review submitted for ISBN ${isbn} by ${username}`
-    });
+    // 3. Save review
+    requestedBook.reviews[username] = review;
+
+    return res.status(200).json({ message: "Review added/updated successfully" });
 });
-// END for testing purpose only ---------------------------------------------
+
+// Delete own book review
+regd_users.delete("/auth/review/:isbn", (req, res) => {
+    const isbn = req.params.isbn;
+
+    // 1. Check if user is authenticated via session
+    const token = req.session?.authorization?.accessToken;
+    const notHasToken = (!token);
+    if (notHasToken) {
+        return res.status(403).json({ message: "User not logged in" });
+    }
+
+    try {
+        const decoded = jwt.verify(token, "access");
+        req.user = decoded.data;
+    } catch (err) {
+        return res.status(403).json({ message: "User not authenticated" });
+    }
+
+    // 2. Validate book existence
+    const hasNoBooks = (!books || Object.keys(books).length === 0);
+    if (hasNoBooks) {
+        return res.status(404).json({ message: "No books found" });
+    }
+
+    const requestedBook = books[isbn];
+    const notHasRequestedBook = (!requestedBook);
+    if (notHasRequestedBook) {
+        return res.status(404).json({ message: "Book not found" });
+    }
+
+    // 3. Get current user
+    const username = req.user;
+
+    // 4. Check if user has a review for this book
+    const userReviewExists = requestedBook.reviews.hasOwnProperty(username);
+    const notIsUserReviewExists = (!userReviewExists)
+    if (notIsUserReviewExists) {
+        return res.status(404).json({ message: "Review not found for this user" });
+    }
+
+    // 5. Delete the review
+    delete requestedBook.reviews[username];
+
+    return res.status(200).json({ message: "Review deleted successfully" });
+});
+
 // Export both the router and utility functions
 module.exports = {
     regd_users,
