@@ -7,23 +7,6 @@ const genl_routes = require('./router/general.js').general;
 const app = express();
 
 app.use(express.json());
-
-// Login endpoint
-app.post("/login", (req, res) => {
-    const user = req.body.user;
-    if (!user) {
-        return res.status(404).json({ message: "Body Empty" });
-    }
-    // Generate JWT access token
-    let accessToken = jwt.sign({
-        data: user
-    }, 'access', { expiresIn: 60 * 60 });
-    // Store access toke748128n in session
-    req.session.authorization = {
-        accessToken
-    }
-    return res.status(200).send("User successfully logged in");
-});
 // Login endpoint
 app.post("/login", (req, res) => {
     const user = req.body.user;
