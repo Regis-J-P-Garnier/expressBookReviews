@@ -37,6 +37,27 @@ regd_users.post("/login", (req, res) => {
     const accessToken = jwt.sign({ data: user.username }, 'access', { expiresIn: '24h' });
     // define session authorization
     req.session.authorization = { accessToken };
+
+    if (false){
+        // Debug: Show what cookies would be set
+        console.log("Would set cookie:", {
+            name: 'session',
+            value: JSON.stringify({ authorization: { accessToken: accessToken } }),
+            options: { 
+                httpOnly: true,
+                secure: false 
+            }
+        });
+    };
+
+    // add an "explicit"  coockie for the tests
+    res.cookie('session', JSON.stringify({
+        authorization: { accessToken: accessToken }
+    }), {
+        httpOnly: true,
+        secure: false
+    });
+
     return res.status(200).send("User successfully logged in");
 });
 

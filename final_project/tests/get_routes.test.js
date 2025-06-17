@@ -37,7 +37,10 @@ describe('GET Routes - Public API Tests', () => {
 
     // GET /author/NoSuchAuthor
     test('GET /author/NoSuchAuthor - should return 404', async () => {
-        const response = await request(app).get('/author/NoSuchAuthor').expect(404);
+        const response = await request(app)
+            .get('/author/NoSuchAuthor')
+            .expect(404);
+
         expect(response.body.message).toBe("Book not found");
     });
 
